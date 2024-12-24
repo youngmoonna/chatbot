@@ -1,0 +1,474 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="10dp"
+    tools:context=".MainActivity">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/chat_view"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        app:layout_constraintWidth_percent="0.4"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/chat_device">
+
+        <RadioGroup
+            android:id="@+id/chat_radio_group"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_margin="20dp"
+            android:orientation="horizontal"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/chat_recycler">
+
+            <RadioButton
+                android:id="@+id/chat_radio_text"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="텍스트"
+                android:gravity="center"
+                android:layout_weight="1"/>
+
+            <RadioButton
+                android:id="@+id/chat_radio_voice"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="음성"
+                android:gravity="center"
+                android:layout_weight="1"/>
+
+        </RadioGroup>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/chat_recycler"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginBottom="15dp"
+            app:layout_constraintBottom_toTopOf="@+id/chat_edit"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/chat_radio_group"/>
+
+        <EditText
+            android:id="@+id/chat_edit"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_marginBottom="70dp"
+            app:layout_constraintWidth_percent="0.7"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/chat_recycler"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <Button
+            android:id="@+id/chat_send"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:text="보내기"
+            android:textSize="20dp"
+            android:layout_marginBottom="70dp"
+            app:layout_constraintStart_toEndOf="@+id/chat_edit"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <ImageView
+            android:id="@+id/chat_voice_image"
+            android:layout_width="40dp"
+            android:layout_height="50dp"
+            android:background="@color/white"
+            android:layout_marginLeft="10dp"
+            android:layout_marginBottom="70dp"
+            app:layout_constraintTop_toBottomOf="@+id/chat_recycler"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <TextView
+            android:id="@+id/chat_voice_text"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_marginLeft="5dp"
+            android:layout_marginBottom="70dp"
+            android:textSize="20dp"
+            android:gravity="center_vertical"
+            app:layout_constraintTop_toBottomOf="@+id/chat_recycler"
+            app:layout_constraintStart_toEndOf="@+id/chat_voice_image"
+            app:layout_constraintEnd_toStartOf="@+id/chat_voice_start"
+            app:layout_constraintWidth_percent="0.6"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <Button
+            android:id="@+id/chat_voice_start"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:text="시작"
+            android:textSize="20dp"
+            android:layout_marginBottom="70dp"
+            app:layout_constraintStart_toEndOf="@+id/chat_voice_text"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <androidx.constraintlayout.widget.Group
+            android:id="@+id/chat_edit_group"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="visible"
+            app:constraint_referenced_ids="chat_edit,chat_send"/>
+
+        <androidx.constraintlayout.widget.Group
+            android:id="@+id/chat_voice_group"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            app:constraint_referenced_ids="chat_voice_image,chat_voice_text,chat_voice_start"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/chat_device"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_margin="10dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/chat_view"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/device_image"
+            android:layout_width="wrap_content"
+            android:layout_height="150dp"
+            android:src="@drawable/air_cleaner"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/device_power"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/device_power"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:text="@string/device_power"
+            android:textColor="@color/black"
+            android:textSize="20dp"
+            app:layout_constraintEnd_toStartOf="@+id/device_power_status"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/device_image" />
+
+        <TextView
+            android:id="@+id/device_power_status"
+            android:layout_width="100dp"
+            android:layout_height="40dp"
+            android:background="@drawable/shape_red_bg"
+            android:gravity="center"
+            android:text="off"
+            android:textColor="@color/red"
+            android:textSize="25dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/device_image" />
+
+        <TextView
+            android:id="@+id/device_fan"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="@string/device_fan"
+            android:textColor="@color/black"
+            android:textSize="20dp"
+            app:layout_constraintEnd_toStartOf="@+id/device_power_status"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/device_power_status" />
+
+        <TextView
+            android:id="@+id/device_fan_status"
+            android:layout_width="100dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="5dp"
+            android:background="@drawable/shape_red_bg"
+            android:gravity="center"
+            android:text="off"
+            android:textColor="@color/red"
+            android:textSize="25dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/device_power_status" />
+
+        <TextView
+            android:id="@+id/device_scan"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="@string/device_scan"
+            android:textColor="@color/black"
+            android:textSize="20dp"
+            app:layout_constraintEnd_toStartOf="@+id/device_power_status"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/device_fan_status" />
+
+        <TextView
+            android:id="@+id/device_scan_status"
+            android:layout_width="100dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="5dp"
+            android:background="@drawable/shape_red_bg"
+            android:gravity="center"
+            android:text="off"
+            android:textColor="@color/red"
+            android:textSize="25dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/device_fan_status" />
+
+        <TextView
+            android:id="@+id/device_battery"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="@string/device_battery_status"
+            android:textColor="@color/black"
+            android:textSize="20dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/device_scan_status" />
+
+        <TextView
+            android:id="@+id/device_battery_capacity"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginRight="10dp"
+            android:background="@drawable/shape_red_bg"
+            android:gravity="center"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:text="@string/device_battery_capacity"
+            android:textColor="@color/red"
+            android:textSize="15dp"
+            app:layout_constraintEnd_toStartOf="@+id/device_battery_efficiency"
+            app:layout_constraintStart_toEndOf="@+id/device_power"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/device_battery" />
+
+        <TextView
+            android:id="@+id/device_battery_efficiency"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginRight="10dp"
+            android:background="@drawable/shape_red_bg"
+            android:gravity="center"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp"
+            android:text="@string/device_battery_efficiency"
+            android:textColor="@color/red"
+            android:textSize="15dp"
+            app:layout_constraintEnd_toStartOf="@+id/device_battery_use"
+            app:layout_constraintStart_toEndOf="@+id/device_battery_capacity"
+            app:layout_constraintTop_toBottomOf="@+id/device_battery" />
+
+        <TextView
+            android:id="@+id/device_battery_use"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginRight="10dp"
+            android:background="@drawable/shape_red_bg"
+            android:gravity="center"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:text="@string/device_battery_use_time"
+            android:textColor="@color/red"
+            android:textSize="15dp"
+            app:layout_constraintEnd_toStartOf="@+id/device_battery_power_time"
+            app:layout_constraintStart_toEndOf="@+id/device_battery_efficiency"
+            app:layout_constraintTop_toBottomOf="@+id/device_battery" />
+
+        <TextView
+            android:id="@+id/device_battery_power_time"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginRight="10dp"
+            android:background="@drawable/shape_red_bg"
+            android:gravity="center"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:text="@string/device_battery_power_time"
+            android:textColor="@color/red"
+            android:textSize="15dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/device_battery_use"
+            app:layout_constraintTop_toBottomOf="@+id/device_battery" />
+
+        <TextView
+            android:id="@+id/device_led"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="@string/device_led_brightness"
+            android:textColor="@color/black"
+            android:textSize="20dp"
+            app:layout_constraintEnd_toStartOf="@+id/device_led_status"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/device_battery_power_time" />
+
+        <TextView
+            android:id="@+id/device_led_status"
+            android:layout_width="100dp"
+            android:layout_height="40dp"
+            android:background="@drawable/shape_red_bg"
+            android:gravity="center"
+            android:layout_marginTop="5dp"
+            android:text="80%"
+            android:textColor="@color/red"
+            android:textSize="25dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/device_battery_power_time" />
+
+        <TextView
+            android:id="@+id/device_lcd"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="@string/device_lcd_brightness"
+            android:textColor="@color/black"
+            android:textSize="20dp"
+            app:layout_constraintEnd_toStartOf="@+id/device_lcd_status"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/device_led_status" />
+
+        <TextView
+            android:id="@+id/device_lcd_status"
+            android:layout_width="100dp"
+            android:layout_height="40dp"
+            android:background="@drawable/shape_red_bg"
+            android:gravity="center"
+            android:layout_marginTop="5dp"
+            android:text="80%"
+            android:textColor="@color/red"
+            android:textSize="25dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/device_led_status" />
+
+        <TextView
+            android:id="@+id/device_air_quality"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="@string/device_lcd_status"
+            android:textColor="@color/black"
+            android:textSize="20dp"
+            app:layout_constraintEnd_toStartOf="@+id/device_air_quality_status"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/device_lcd_status" />
+        <TextView
+            android:id="@+id/device_air_quality_status"
+            android:layout_width="100dp"
+            android:layout_height="40dp"
+            android:background="@drawable/shape_red_bg"
+            android:gravity="center"
+            android:layout_marginTop="5dp"
+            android:text="80%"
+            android:textColor="@color/red"
+            android:textSize="25dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/device_lcd_status" />
+
+        <TextView
+            android:id="@+id/device_uv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="@string/device_uv"
+            android:textColor="@color/black"
+            android:textSize="20dp"
+            app:layout_constraintEnd_toStartOf="@+id/device_air_quality_status"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/device_air_quality_status" />
+        <TextView
+            android:id="@+id/device_uv_status"
+            android:layout_width="100dp"
+            android:layout_height="40dp"
+            android:background="@drawable/shape_red_bg"
+            android:gravity="center"
+            android:layout_marginTop="5dp"
+            android:text="80%"
+            android:textColor="@color/red"
+            android:textSize="25dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/device_air_quality_status" />
+
+        <TextView
+            android:id="@+id/device_media"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="@string/device_media_sound"
+            android:textColor="@color/black"
+            android:textSize="20dp"
+            app:layout_constraintEnd_toStartOf="@+id/device_media_status"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/device_uv_status" />
+        <TextView
+            android:id="@+id/device_media_status"
+            android:layout_width="100dp"
+            android:layout_height="40dp"
+            android:background="@drawable/shape_red_bg"
+            android:gravity="center"
+            android:layout_marginTop="5dp"
+            android:text="80%"
+            android:textColor="@color/red"
+            android:textSize="25dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/device_uv_status" />
+
+        <TextView
+            android:id="@+id/device_touch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="@string/device_touch_sound"
+            android:textColor="@color/black"
+            android:textSize="20dp"
+            app:layout_constraintEnd_toStartOf="@+id/device_touch_status"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/device_media_status" />
+        <TextView
+            android:id="@+id/device_touch_status"
+            android:layout_width="100dp"
+            android:layout_height="40dp"
+            android:background="@drawable/shape_red_bg"
+            android:gravity="center"
+            android:layout_marginTop="5dp"
+            android:text="80%"
+            android:textColor="@color/red"
+            android:textSize="25dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/device_media_status" />
+
+        <TextView
+            android:id="@+id/device_mute"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="@string/device_mute_setting"
+            android:textColor="@color/black"
+            android:textSize="20dp"
+            app:layout_constraintEnd_toStartOf="@+id/device_mute_status"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/device_touch_status" />
+        <TextView
+            android:id="@+id/device_mute_status"
+            android:layout_width="100dp"
+            android:layout_height="40dp"
+            android:background="@drawable/shape_red_bg"
+            android:gravity="center"
+            android:layout_marginTop="5dp"
+            android:text="80%"
+            android:textColor="@color/red"
+            android:textSize="25dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/device_touch_status" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

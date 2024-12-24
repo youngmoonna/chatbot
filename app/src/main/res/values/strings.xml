@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">QuberChat</string>
+    <string name="chat_string">%s:\n   %s</string>
+    <string name="device_power">공기청정기 전원</string>
+    <string name="device_fan">공기청정기 풍량모드</string>
+    <string name="device_scan">공기질 스캔모드</string>
+    <string name="device_battery_status">배터리 상태</string>
+    <string name="device_battery_capacity">잔량\n%d</string>
+    <string name="device_battery_efficiency">효율\n%d</string>
+    <string name="device_battery_use_time">일평균사용시간\n%d</string>
+    <string name="device_battery_power_time">일평균사용전력\n%d</string>
+    <string name="device_led_brightness">LED 밝기 상태</string>
+    <string name="device_lcd_brightness">LCD 밝기 상태</string>
+    <string name="device_lcd_status">LED 공기질 상태표시 여부</string>
+    <string name="device_uv">살균(UV) 모드 여부</string>
+    <string name="device_media_sound">미디음 사운드</string>
+    <string name="device_touch_sound">터치음 사운드</string>
+    <string name="device_mute_setting">음소거 설정</string>
+</resources>
