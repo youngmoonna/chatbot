@@ -206,6 +206,9 @@ class MainActivity : AppCompatActivity(), STTListener {
 
                     if(datas != null) {
                         chatList.add(Message("assistant", chat!!.toString()))
+                        datas.forEach { device ->
+                            callFunction(device, airCleaner)
+                        }
 //                        var jsonArray = JSONArray()
 //                        data.devices.forEach {
 //                            var json = callFunction(it, airCleaner)
@@ -407,6 +410,9 @@ class MainActivity : AppCompatActivity(), STTListener {
             //공기청정기 제어
             "setAirCleanerOperation" -> {
                 resultJson.put("name", device.name)
+                var argument = converterToArgument(device.arguments)
+                if(argument.size > 0) {
+                }
 //                device.arguments.forEach { key, value ->
 //                    if(key == "action") {
 //                        var new = value as Int
@@ -563,6 +569,23 @@ class MainActivity : AppCompatActivity(), STTListener {
     }
     fun getSoundMute() {
 
+    }
+
+    fun converterToArgument(arguments : Any): HashMap<String, Any> {
+        var argument: HashMap<String, Any> = HashMap()
+        var json = JSONObject(arguments.toString())
+        var action = json.get("action")
+        var ai = json.get("ai")
+        var speed = json.get("speed")
+
+        if(action != null)
+            argument.put("action", (action as Int))
+        else if(ai != null)
+            argument.put("ai", (ai as Int))
+        else if(speed != null)
+            argument.put("ai", (speed as Int))
+
+        return  argument
     }
 
     companion object {
