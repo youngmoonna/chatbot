@@ -10,6 +10,7 @@ import android.os.Looper
 import android.text.TextUtils
 import android.util.Log
 import android.view.View
+import android.view.animation.AnimationUtils
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -48,6 +49,7 @@ class MainActivity : AppCompatActivity(), STTListener {
     private lateinit var mainBinding: ActivityMainBinding
 
     private var chatList = ArrayList<Message>()
+    private var sendList = ArrayList<Message>()
     private var chatListAdapter = ChatAdapter(this, chatList)
 
     private var airCleaner = AirCleaner()
@@ -109,6 +111,7 @@ class MainActivity : AppCompatActivity(), STTListener {
 
             //chat voice
             chatVoiceStart.setOnClickListener {
+                sendList.clear()
                 STTClient().init(applicationContext, this@MainActivity)
             }
         }
@@ -158,6 +161,7 @@ class MainActivity : AppCompatActivity(), STTListener {
             var message = Message()
             message.role = "user"
             message.content = msg!!.toString()
+            chatList.add(message)
             llmAPI(message)
         }
         Handler(Looper.getMainLooper()).postDelayed( {
@@ -178,55 +182,44 @@ class MainActivity : AppCompatActivity(), STTListener {
 
 
     fun llmAPI(msg: Message) {
-        var sendList = ArrayList<Message>()
-        chatList.add(msg)
-
-//        //list view update
-//        runOnUiThread {
-//            chatListAdapter.notifyDataSetChanged()
-//            mainBinding.run {
-//                chatRecycler.scrollToPosition(chatListAdapter.itemCount -1)
-//            }
-//        }
-        var chat = chatList.last()
-        sendList.add(chat)
-
+        sendList.add(msg)
         var messages = RequestMsg(sendList)
 
         retrofit.llm_chat(messages).enqueue(object : Callback<ResponseMsg> {
             override fun onResponse(call: Call<ResponseMsg>, response: Response<ResponseMsg>) {
                 if(response.isSuccessful){
                     Log.e(TAG, "chat : ${response.body().toString()}")
-                    var chat = response.body()
-//                    var jsonArray = JSONArray(chat!!.response.toString())
-                    var gson = Gson()
-                    val typeToken = object : TypeToken<List<Device>>() {}.type
-                    var datas = gson.fromJson<List<Device>>(chat!!.response, typeToken)
-//                    var datas = gson.fromJson(chat!!.toString(), ResponseDev::class.java)
+                    var chat = response.body()!!
 
-                    if(datas != null) {
-                        chatList.add(Message("assistant", chat!!.toString()))
-                        datas.forEach { device ->
-                            callFunction(device, airCleaner)
+                    if(chat.response.contains("arguments")) {
+                        var gson = Gson()
+                        val typeToken = object : TypeToken<List<Device>>() {}.type
+                        var datas = gson.fromJson<List<Device>>(chat!!.response.replace("\n", ""), typeToken)
+
+                        if(datas != null) {
+                            sendList.add(Message("assistant", gson.toJson(datas)))
+                            var jsonArray = JSONArray()
+                            datas.forEach { device ->
+                                var json = callFunction(device, airCleaner)
+                                jsonArray.put(json)
+                            }
+                            var msg = Message("user", jsonArray.toString())
+
+                            //결과 보내기
+                            llmAPI(msg)
                         }
-//                        var jsonArray = JSONArray()
-//                        data.devices.forEach {
-//                            var json = callFunction(it, airCleaner)
-//                            jsonArray.put(json)
-//                        }
-//                        var msg = Message("user", jsonArray.toString())
-                        //결과 보내기
-                        llmAPI(msg)
                     }
                     else {
-                        var message = Message("assistant", chat!!.response)
+                        var message = Message("assistant", chat.response)
                         chatList.add(message)
-                        generateTTS(chat!!.response)
+                        generateTTS(chat.response)
                     }
-                    chatListAdapter.notifyDataSetChanged()
+
+//                    chatListAdapter.notifyDataSetChanged()
                     mainBinding.run {
                         chatRecycler.scrollToPosition(chatListAdapter.itemCount -1)
                     }
+                    chatListAdapter.updateItemView(chatList.size-1)
                 }
             }
 
@@ -238,7 +231,8 @@ class MainActivity : AppCompatActivity(), STTListener {
     }
 
     fun generateTTS(text: String) {
-        val tts = RequestTTS(text, 1.3.toFloat(), "KR", "quber-test")
+        var res_split = text.split("//")
+        val tts = RequestTTS(res_split[0], 1.3.toFloat(), "KR", "quber-test")
         retrofit.generate_tts(tts).enqueue(object : Callback<ResponseBody> {
             override fun onResponse(p0: Call<ResponseBody>, p1: Response<ResponseBody>) {
                 var voice = p1.body()?.let { writeResponseBodyToDisk(it) }
@@ -252,6 +246,8 @@ class MainActivity : AppCompatActivity(), STTListener {
                     }
                     mediaPlayer?.setOnCompletionListener {
                         mediaPlayer.release()
+                        if(text.contains("//call_stt"))
+                            STTClient().init(applicationContext, this@MainActivity)
                     }
                 }
             }
@@ -316,27 +312,65 @@ class MainActivity : AppCompatActivity(), STTListener {
     //device init
     fun setDeviceValue(air: AirCleaner) {
         mainBinding.run {
+            // blink 애니메이션
+            val anim = AnimationUtils.loadAnimation(this@MainActivity,R.anim.blink_animation)
             //동작여부
             when (air.action) {
-                0 -> devicePowerStatus.text = "STOP"
-                1 -> devicePowerStatus.text = "START"
-                2 -> devicePowerStatus.text = "PAUSE"
+                0 -> {
+                    devicePowerStatus.background = getDrawable(R.drawable.shape_red_bg)
+                    devicePowerStatus.text = "꺼짐"
+                    devicePowerStatus.animation = anim
+                }
+                1 ->  {
+                    devicePowerStatus.background = getDrawable(R.drawable.shape_green_bg)
+                    devicePowerStatus.text = "켜짐"
+                    devicePowerStatus.animation = anim
+                }
+                2 -> {
+                    devicePowerStatus.background = getDrawable(R.drawable.shape_red_bg)
+                    devicePowerStatus.text = "중지"
+                    devicePowerStatus.animation = anim
+                }
             }
 
             //풍량
             when (air.speed) {
-                0 -> deviceFanStatus.text = "자동"
-                1 -> deviceFanStatus.text = "취침"
-                2 -> deviceFanStatus.text = "약풍"
-                3 -> deviceFanStatus.text = "중풍"
-                4 -> deviceFanStatus.text = "강풍"
-                5 -> deviceFanStatus.text = "터보"
+                0 -> {
+                    deviceFanStatus.background = getDrawable(R.drawable.shape_blue_bg)
+                    deviceFanStatus.text = "자동"
+                }
+                1 -> {
+                    deviceFanStatus.background = getDrawable(R.drawable.shape_blue_bg)
+                    deviceFanStatus.text = "취침"
+                }
+                2 -> {
+                    deviceFanStatus.background = getDrawable(R.drawable.shape_green_bg)
+                    deviceFanStatus.text = "약풍"
+                }
+                3 -> {
+                    deviceFanStatus.background = getDrawable(R.drawable.shape_green_bg)
+                    deviceFanStatus.text = "중풍"
+                }
+                4 -> {
+                    deviceFanStatus.background = getDrawable(R.drawable.shape_red_bg)
+                    deviceFanStatus.text = "강풍"
+                }
+                5 -> {
+                    deviceFanStatus.background = getDrawable(R.drawable.shape_red_bg)
+                    deviceFanStatus.text = "터보"
+                }
             }
 
             //스캔모드
             when (air.aqm_call_status) {
-                0 -> deviceScanStatus.text = "수동"
-                1 -> deviceScanStatus.text = "자동"
+                0 -> {
+                    deviceScanStatus.background = getDrawable(R.drawable.shape_green_bg)
+                    deviceScanStatus.text = "수동"
+                }
+                1 -> {
+                    deviceScanStatus.background = getDrawable(R.drawable.shape_red_bg)
+                    deviceScanStatus.text = "자동"
+                }
             }
 
             //배터리
@@ -347,58 +381,122 @@ class MainActivity : AppCompatActivity(), STTListener {
 
             //LED 밝기
             when (air.LED_brightness) {
-                0 -> deviceLedStatus.text = "100%"
-                1 -> deviceLedStatus.text = "50%"
-                2 -> deviceLedStatus.text = "0%"
+                0 -> {
+                    deviceLedStatus.background = getDrawable(R.drawable.shape_red_bg)
+                    deviceLedStatus.text = "100%"
+                }
+                1 -> {
+                    deviceLedStatus.background = getDrawable(R.drawable.shape_green_bg)
+                    deviceLedStatus.text = "50%"
+                }
+                2 -> {
+                    deviceLedStatus.background = getDrawable(R.drawable.shape_blue_bg)
+                    deviceLedStatus.text = "0%"
+                }
             }
 
             //LCD 밝기
             when (air.LCD_brightness) {
-                0 -> deviceLcdStatus.text = "100%"
-                1 -> deviceLcdStatus.text = "50%"
-                2 -> deviceLcdStatus.text = "0%"
+                0 -> {
+                    deviceLcdStatus.background = getDrawable(R.drawable.shape_red_bg)
+                    deviceLcdStatus.text = "100%"
+                }
+                1 -> {
+                    deviceLcdStatus.background = getDrawable(R.drawable.shape_green_bg)
+                    deviceLcdStatus.text = "50%"
+                }
+                2 -> {
+                    deviceLcdStatus.background = getDrawable(R.drawable.shape_blue_bg)
+                    deviceLcdStatus.text = "0%"
+                }
             }
 
             //LED 공기질 상태 표시
-            if(air.led_enable)
+            if(air.led_enable) {
+                deviceAirQualityStatus.background = getDrawable(R.drawable.shape_green_bg)
                 deviceAirQualityStatus.text = "ON"
-            else
+            }
+            else {
+                deviceAirQualityStatus.background = getDrawable(R.drawable.shape_red_bg)
                 deviceAirQualityStatus.text = "OFF"
+            }
 
             //UV 모드
-            if(air.uv_enable)
+            if(air.uv_enable) {
+                deviceUvStatus.background = getDrawable(R.drawable.shape_green_bg)
                 deviceUvStatus.text = "ON"
-            else
+            }
+            else {
+                deviceUvStatus.background = getDrawable(R.drawable.shape_red_bg)
                 deviceUvStatus.text = "OFF"
+            }
+
 
             //미디음 사운드
             when (air.sound_volume) {
-                0 -> deviceMediaStatus.text = "0%"
-                1 -> deviceMediaStatus.text = "20%"
-                2 -> deviceMediaStatus.text = "40%"
-                3 -> deviceMediaStatus.text = "60%"
-                4 -> deviceMediaStatus.text = "80%"
-                5 -> deviceMediaStatus.text = "100%"
+                0 -> {
+                    deviceMediaStatus.background = getDrawable(R.drawable.shape_blue_bg)
+                    deviceMediaStatus.text = "0%"
+                }
+                1 -> {
+                    deviceMediaStatus.background = getDrawable(R.drawable.shape_blue_bg)
+                    deviceMediaStatus.text = "20%"
+                }
+                2 -> {
+                    deviceMediaStatus.background = getDrawable(R.drawable.shape_green_bg)
+                    deviceMediaStatus.text = "40%"
+                }
+                3 -> {
+                    deviceMediaStatus.background = getDrawable(R.drawable.shape_green_bg)
+                    deviceMediaStatus.text = "60%"
+                }
+                4 -> {
+                    deviceMediaStatus.background = getDrawable(R.drawable.shape_red_bg)
+                    deviceMediaStatus.text = "80%"
+                }
+                5 -> {
+                    deviceMediaStatus.background = getDrawable(R.drawable.shape_red_bg)
+                    deviceMediaStatus.text = "100%"
+                }
             }
 
             //터치음 사운드
             when (air.button_volume) {
-                0 -> deviceTouchStatus.text = "0%"
-                1 -> deviceTouchStatus.text = "20%"
-                2 -> deviceTouchStatus.text = "40%"
-                3 -> deviceTouchStatus.text = "60%"
-                4 -> deviceTouchStatus.text = "80%"
-                5 -> deviceTouchStatus.text = "100%"
+                0 -> {
+                    deviceTouchStatus.background = getDrawable(R.drawable.shape_blue_bg)
+                    deviceTouchStatus.text = "0%"
+                }
+                1 -> {
+                    deviceTouchStatus.background = getDrawable(R.drawable.shape_blue_bg)
+                    deviceTouchStatus.text = "20%"
+                }
+                2 -> {
+                    deviceTouchStatus.background = getDrawable(R.drawable.shape_green_bg)
+                    deviceTouchStatus.text = "40%"
+                }
+                3 -> {
+                    deviceTouchStatus.background = getDrawable(R.drawable.shape_green_bg)
+                    deviceTouchStatus.text = "60%"
+                }
+                4 -> {
+                    deviceTouchStatus.background = getDrawable(R.drawable.shape_red_bg)
+                    deviceTouchStatus.text = "80%"
+                }
+                5 -> {
+                    deviceTouchStatus.background = getDrawable(R.drawable.shape_red_bg)
+                    deviceTouchStatus.text = "100%"
+                }
             }
 
             //음소거 설정
-            if(air.mute)
+            if(air.mute){
+                deviceMuteStatus.background = getDrawable(R.drawable.shape_green_bg)
                 deviceMuteStatus.text = "ON"
-            else
+            }
+            else {
+                deviceMuteStatus.background = getDrawable(R.drawable.shape_red_bg)
                 deviceMuteStatus.text = "OFF"
-
-
-
+            }
         }
     }
 
@@ -412,76 +510,364 @@ class MainActivity : AppCompatActivity(), STTListener {
                 resultJson.put("name", device.name)
                 var argument = converterToArgument(device.arguments)
                 if(argument.size > 0) {
-                }
-//                device.arguments.forEach { key, value ->
-//                    if(key == "action") {
-//                        var new = value as Int
-//                        var old = getAirCleanerOperation(key, air)
-//
-//                        if(new != old) {
-//                            air.action = new
-//                            var result = setAirCleanerOperation(key, value, air)
-//                            resultJson.put(key, result.action)
-//                            changeStatus = true
-//                        }
-//                    }
-//                    else if(key == "ai") {
-//                        var new = value as Boolean
-//                        var old = getAirCleanerOperation(key, air)
-//
-//                        if(new != old) {
-//                            air.ai = new
-//                            var result = setAirCleanerOperation(key, value, air)
-//                            resultJson.put(key, result.ai)
-//                            changeStatus = true
-//                        }
-//                    }
-//                    else {
-//                        var new = value as Int
-//                        var old = getAirCleanerOperation(key, air)
-//
-//                        if(new != old) {
-//                            air.speed = new
-//                            var result = setAirCleanerOperation(key, value, air)
-//                            resultJson.put(key, result.speed)
-//                            changeStatus = true
-//                        }
-//                    }
-//                }
+                    argument.forEach { key, value ->
+                        when (key) {
+                            "action" -> {
+                                var new = value as Int
+                                var old = getAirCleanerOperation(key, air)
 
+                                if(new != old) {
+                                    air.action = new
+                                    var result = setAirCleanerOperation(key, value, air)
+                                    resultJson.put(key, result.action)
+                                    changeStatus = true
+                                }
+                            }
+                            "ai" -> {
+                                var new = value as Boolean
+                                var old = getAirCleanerOperation(key, air)
+
+                                if(new != old) {
+                                    air.ai = new
+                                    var result = setAirCleanerOperation(key, value, air)
+                                    resultJson.put(key, result.ai)
+                                    changeStatus = true
+                                }
+                            }
+                            "speed" -> {
+                                var new = value as Int
+                                var old = getAirCleanerOperation(key, air)
+
+                                if(new != old) {
+                                    air.speed = new
+                                    var result = setAirCleanerOperation(key, value, air)
+                                    resultJson.put(key, result.speed)
+                                    changeStatus = true
+                                }
+                            }
+                        }
+                    }
+                }
                 if(changeStatus)
                     resultJson.put("change", 1)
                 else
                     resultJson.put("change", 0)
             }
             "getAirCleanerOperation" -> {
-
+                resultJson.put("name", device.name)
+                var argument = converterToArgument(device.arguments)
+                if(argument.size > 0) {
+                    argument.forEach { key, value ->
+                        var getValue = getAirCleanerOperation(key, air)
+                        resultJson.put(key, getValue)
+                    }
+                }
             }
 
             //공기청정기 공기질 스캔
             "setAirQualityIndoorInfo" -> {
-                var changeStatus = false
-                var resultJson = JSONObject()
                 resultJson.put("name", device.name)
-//                device.arguments.forEach { key, value ->
-//
-//                }
+                var argument = converterToArgument(device.arguments)
+                if(argument.size > 0) {
+                    argument.forEach { key, value ->
+                        when (key) {
+                            "aqm_call_status" -> {
+                                var new = value as Int
+                                var old = getAirQualityIndoorInfo(key, air)
 
+                                if(new != old) {
+                                    air.aqm_call_status = new
+                                    var result = setAirQualityIndoorInfo(key, value, air)
+                                    resultJson.put(key, result.aqm_call_status)
+                                    changeStatus = true
+                                }
+                            }
+                        }
+                    }
+                }
                 if(changeStatus)
                     resultJson.put("change", 1)
                 else
                     resultJson.put("change", 0)
             }
             "getAirQualityIndoorInfo" -> {
-
+                resultJson.put("name", device.name)
+                var argument = converterToArgument(device.arguments)
+                if(argument.size > 0) {
+                    argument.forEach { key, value ->
+                        var getValue = getAirQualityIndoorInfo(key, air)
+                        resultJson.put(key, getValue)
+                    }
+                }
             }
 
             //배터리 정보
             "getBatteryInfo" -> {
-
-
+                resultJson.put("name", device.name)
+                var argument = converterToArgument(device.arguments)
+                if(argument.size > 0) {
+                    argument.forEach { key, value ->
+                        var getValue = getBatteryInfo(key, air)
+                        resultJson.put(key, getValue)
+                    }
+                }
             }
 
+            //LED 밝기
+            "setLedBrightness" -> {
+                resultJson.put("name", device.name)
+                var argument = converterToArgument(device.arguments)
+                if(argument.size > 0) {
+                    argument.forEach { key, value ->
+                        when (key) {
+                            "LED_brightness" -> {
+                                var new = value as Int
+                                var old = getLedBrightness(key, air)
+
+                                if(new != old) {
+                                    air.LED_brightness = new
+                                    var result = setLedBrightness(key, value, air)
+                                    resultJson.put(key, result.LED_brightness)
+                                    changeStatus = true
+                                }
+                            }
+                        }
+                    }
+                }
+                if(changeStatus)
+                    resultJson.put("change", 1)
+                else
+                    resultJson.put("change", 0)
+            }
+            "getLedBrightness" -> {
+                resultJson.put("name", device.name)
+                var argument = converterToArgument(device.arguments)
+                if(argument.size > 0) {
+                    argument.forEach { key, value ->
+                        var getValue = getLedBrightness(key, air)
+                        resultJson.put(key, getValue)
+                    }
+                }
+            }
+            "setLedAirQualityIndicatorEnable" -> {
+                resultJson.put("name", device.name)
+                var argument = converterToArgument(device.arguments)
+                if(argument.size > 0) {
+                    argument.forEach { key, value ->
+                        when (key) {
+                            "enable" -> {
+                                var new = value as Boolean
+                                var old = getLedAirQualityIndicatorEnable(key, air)
+
+                                if(new != old) {
+                                    air.led_enable = new
+                                    var result = setLedAirQualityIndicatorEnable(key, value, air)
+                                    resultJson.put(key, result.led_enable)
+                                    changeStatus = true
+                                }
+                            }
+                        }
+                    }
+                }
+                if(changeStatus)
+                    resultJson.put("change", 1)
+                else
+                    resultJson.put("change", 0)
+            }
+            "getLedAirQualityIndicatorEnable" -> {
+                resultJson.put("name", device.name)
+                var argument = converterToArgument(device.arguments)
+                if(argument.size > 0) {
+                    argument.forEach { key, value ->
+                        var getValue = getLedAirQualityIndicatorEnable(key, air)
+                        resultJson.put(key, getValue)
+                    }
+                }
+            }
+
+            //LCD
+            "setLCDBrightness" -> {
+                resultJson.put("name", device.name)
+                var argument = converterToArgument(device.arguments)
+                if(argument.size > 0) {
+                    argument.forEach { key, value ->
+                        when (key) {
+                            "LCD_brightness" -> {
+                                var new = value as Int
+                                var old = getLCDBrightness(key, air)
+
+                                if(new != old) {
+                                    air.LCD_brightness = new
+                                    var result = setLCDBrightness(key, value, air)
+                                    resultJson.put(key, result.LCD_brightness)
+                                    changeStatus = true
+                                }
+                            }
+                        }
+                    }
+                }
+                if(changeStatus)
+                    resultJson.put("change", 1)
+                else
+                    resultJson.put("change", 0)
+            }
+            "getLCDBrightness" -> {
+                resultJson.put("name", device.name)
+                var argument = converterToArgument(device.arguments)
+                if(argument.size > 0) {
+                    argument.forEach { key, value ->
+                        var getValue = getLCDBrightness(key, air)
+                        resultJson.put(key, getValue)
+                    }
+                }
+            }
+
+            //UV
+            "setUVEnable" -> {
+                resultJson.put("name", device.name)
+                var argument = converterToArgument(device.arguments)
+                if(argument.size > 0) {
+                    argument.forEach { key, value ->
+                        when (key) {
+                            "enable" -> {
+                                var new = value as Boolean
+                                var old = getUVEnable(key, air)
+
+                                if(new != old) {
+                                    air.uv_enable = new
+                                    var result = setUVEnable(key, value, air)
+                                    resultJson.put(key, result.uv_enable)
+                                    changeStatus = true
+                                }
+                            }
+                        }
+                    }
+                }
+                if(changeStatus)
+                    resultJson.put("change", 1)
+                else
+                    resultJson.put("change", 0)
+            }
+            "getUVEnable" -> {
+                resultJson.put("name", device.name)
+                var argument = converterToArgument(device.arguments)
+                if(argument.size > 0) {
+                    argument.forEach { key, value ->
+                        var getValue = getUVEnable(key, air)
+                        resultJson.put(key, getValue)
+                    }
+                }
+            }
+
+            //sound
+            "setSoundVoiceVolume" -> {
+                resultJson.put("name", device.name)
+                var argument = converterToArgument(device.arguments)
+                if(argument.size > 0) {
+                    argument.forEach { key, value ->
+                        when (key) {
+                            "sound_volume" -> {
+                                var new = value as Int
+                                var old = getSoundVoiceVolume(key, air)
+
+                                if(new != old) {
+                                    air.sound_volume = new
+                                    var result = setSoundVoiceVolume(key, value, air)
+                                    resultJson.put(key, result.sound_volume)
+                                    changeStatus = true
+                                }
+                            }
+                        }
+                    }
+                }
+                if(changeStatus)
+                    resultJson.put("change", 1)
+                else
+                    resultJson.put("change", 0)
+
+            }
+            "getSoundVoiceVolume" -> {
+                resultJson.put("name", device.name)
+                var argument = converterToArgument(device.arguments)
+                if(argument.size > 0) {
+                    argument.forEach { key, value ->
+                        var getValue = getSoundVoiceVolume(key, air)
+                        resultJson.put(key, getValue)
+                    }
+                }
+            }
+            "setSoundEffectVolume" -> {
+                resultJson.put("name", device.name)
+                var argument = converterToArgument(device.arguments)
+                if(argument.size > 0) {
+                    argument.forEach { key, value ->
+                        when (key) {
+                            "button_volume" -> {
+                                var new = value as Int
+                                var old = getSoundEffectVolume(key, air)
+
+                                if(new != old) {
+                                    air.button_volume = new
+                                    var result = setSoundEffectVolume(key, value, air)
+                                    resultJson.put(key, result.button_volume)
+                                    changeStatus = true
+                                }
+                            }
+                        }
+                    }
+                }
+                if(changeStatus)
+                    resultJson.put("change", 1)
+                else
+                    resultJson.put("change", 0)
+
+            }
+            "getSoundEffectVolume" -> {
+                resultJson.put("name", device.name)
+                var argument = converterToArgument(device.arguments)
+                if(argument.size > 0) {
+                    argument.forEach { key, value ->
+                        var getValue = getSoundEffectVolume(key, air)
+                        resultJson.put(key, getValue)
+                    }
+                }
+            }
+            "setSoundMute" -> {
+                resultJson.put("name", device.name)
+                var argument = converterToArgument(device.arguments)
+                if(argument.size > 0) {
+                    argument.forEach { key, value ->
+                        when (key) {
+                            "mute" -> {
+                                var new = value as Boolean
+                                var old = getSoundMute(key, air)
+
+                                if(new != old) {
+                                    air.mute = new
+                                    var result = setSoundMute(key, value, air)
+                                    resultJson.put(key, result.mute)
+                                    changeStatus = true
+                                }
+                            }
+                        }
+                    }
+                }
+                if(changeStatus)
+                    resultJson.put("change", 1)
+                else
+                    resultJson.put("change", 0)
+
+            }
+            "getSoundMute" -> {
+                resultJson.put("name", device.name)
+                var argument = converterToArgument(device.arguments)
+                if(argument.size > 0) {
+                    argument.forEach { key, value ->
+                        var getValue = getSoundMute(key, air)
+                        resultJson.put(key, getValue)
+                    }
+                }
+            }
         }
         //device set
         setDeviceValue(air)
@@ -508,82 +894,182 @@ class MainActivity : AppCompatActivity(), STTListener {
     }
 
     //공기질
-    fun setAirQualityIndoorInfo(json: JSONObject) {
+    fun setAirQualityIndoorInfo(key : String, value: Any, air: AirCleaner): AirCleaner {
+        when (key){
+            "aqm_call_status" -> air.aqm_call_status = value as Int
+        }
+        return air
 
     }
-    fun getAirQualityIndoorInfo() {
-
+    fun getAirQualityIndoorInfo(data : String, air: AirCleaner): Any {
+        return when (data) {
+            "aqm_call_status" -> air.aqm_call_status
+            else -> air
+        }
     }
 
     //배터리
-    fun getBatteryInfo() {
-
+    fun getBatteryInfo(data : String, air: AirCleaner): Any{
+        return when (data) {
+            "capacity" -> air.capacity
+            "efficiency" -> air.efficiency
+            "avrdailyusagetime" -> air.avrdailyusagetime
+            "avrdailyusagepower" -> air.avrdailyusagepower
+            else -> ""
+        }
     }
 
     //LED
-    fun setLedBrightness() {
-
+    fun setLedBrightness(key : String, value: Any, air: AirCleaner): AirCleaner {
+        when (key){
+            "LED_brightness" -> air.LED_brightness = value as Int
+        }
+        return air
     }
-    fun getLedBrightness() {
-
+    fun getLedBrightness(data : String, air: AirCleaner) : Any {
+        return when (data) {
+            "LED_brightness" -> air.LED_brightness
+            else -> ""
+        }
     }
-
-    fun setLedAirQualityIndicatorEnable() {
-
+    fun setLedAirQualityIndicatorEnable(key : String, value: Any, air: AirCleaner): AirCleaner {
+        when (key){
+            "enable" -> air.led_enable = value as Boolean
+        }
+        return air
     }
-    fun getLedAirQualityIndicatorEnable() {
-
+    fun getLedAirQualityIndicatorEnable(data : String, air: AirCleaner) : Any {
+        return when (data) {
+            "enable" -> air.led_enable
+            else -> ""
+        }
     }
 
     //LCD
-    fun setLCDBrightness() {
-
+    fun setLCDBrightness(key : String, value: Any, air: AirCleaner): AirCleaner {
+        when (key){
+            "LCD_brightness" -> air.LCD_brightness = value as Int
+        }
+        return air
     }
-    fun getLCDBrightness() {
-
+    fun getLCDBrightness(data : String, air: AirCleaner) : Any {
+        return when (data) {
+            "LCD_brightness" -> air.LCD_brightness
+            else -> ""
+        }
     }
 
     //UV
-    fun setUVEnable() {
-
+    fun setUVEnable(key : String, value: Any, air: AirCleaner): AirCleaner {
+        when (key){
+            "enable" -> air.uv_enable = value as Boolean
+        }
+        return air
     }
-    fun getUVEnable() {
-
+    fun getUVEnable(data : String, air: AirCleaner) : Any {
+        return when (data) {
+            "enable" -> air.uv_enable
+            else -> ""
+        }
     }
 
     //sound
-    fun setSoundVoiceVolume() {
-
+    fun setSoundVoiceVolume(key : String, value: Any, air: AirCleaner): AirCleaner {
+        when (key){
+            "sound_volume" -> air.sound_volume = value as Int
+        }
+        return air
     }
-    fun getSoundVoiceVolume() {
-
+    fun getSoundVoiceVolume(data : String, air: AirCleaner) : Any {
+        return when (data) {
+            "sound_volume" -> air.sound_volume
+            else -> ""
+        }
     }
-    fun setSoundEffectVolume() {
-
+    fun setSoundEffectVolume(key : String, value: Any, air: AirCleaner): AirCleaner {
+        when (key){
+            "button_volume" -> air.button_volume = value as Int
+        }
+        return air
     }
-    fun getSoundEffectVolume() {
-
+    fun getSoundEffectVolume(data : String, air: AirCleaner) : Any {
+        return when (data) {
+            "button_volume" -> air.button_volume
+            else -> ""
+        }
     }
-    fun setSoundMute() {
-
+    fun setSoundMute(key : String, value: Any, air: AirCleaner): AirCleaner {
+        when (key){
+            "mute" -> air.mute = value as Boolean
+        }
+        return air
     }
-    fun getSoundMute() {
-
+    fun getSoundMute(data : String, air: AirCleaner) : Any {
+        return when (data) {
+            "mute" -> air.mute
+            else -> ""
+        }
     }
 
     fun converterToArgument(arguments : Any): HashMap<String, Any> {
         var argument: HashMap<String, Any> = HashMap()
         var json = JSONObject(arguments.toString())
-        var action = json.get("action")
-        var ai = json.get("ai")
-        var speed = json.get("speed")
 
-        if(action != null)
-            argument.put("action", (action as Int))
-        else if(ai != null)
-            argument.put("ai", (ai as Int))
-        else if(speed != null)
-            argument.put("ai", (speed as Int))
+        if(arguments.toString().contains("get_param")) {
+            var jsonArray = json.getJSONArray("get_param")
+            for(i in 0 until  jsonArray.length()) {
+                argument.put(jsonArray.getString(i), "")
+                Log.e(TAG, "param: ${jsonArray.get(i)}")
+            }
+        }
+        else {
+            if(arguments.toString().contains("action")) {
+                var action = json.get("action")
+                argument.put("action", (action as Int))
+            }
+            else if(arguments.toString().contains("ai")) {
+                var ai = json.get("ai")
+                argument.put("ai", (ai as Boolean))
+            }
+            else if(arguments.toString().contains("speed")) {
+                var speed = json.get("speed")
+                argument.put("speed", (speed as Int))
+            }
+            else if(arguments.toString().contains("aqm_call_status")) {
+                var aqm = json.get("aqm_call_status")
+                argument.put("aqm_call_status", (aqm as Int))
+            }
+            else if(arguments.toString().contains("LED_brightness")) {
+                var led = json.get("LED_brightness")
+                argument.put("LED_brightness", (led as Int))
+            }
+            else if(arguments.toString().contains("LCD_brightness")) {
+                var lcd = json.get("LCD_brightness")
+                argument.put("LCD_brightness", (lcd as Int))
+            }
+            else if(arguments.toString().contains("enable")) {
+                var enable = json.get("enable")
+                if(enable == "true")
+                    argument.put("enable", true)
+                else
+                    argument.put("enable", false)
+            }
+            else if(arguments.toString().contains("sound_volume")) {
+                var sound = json.get("sound_volume")
+                argument.put("sound_volume", (sound as Int))
+            }
+            else if(arguments.toString().contains("button_volume")) {
+                var button = json.get("button_volume")
+                argument.put("button_volume", (button as Int))
+            }
+            else if(arguments.toString().contains("mute")) {
+                var mute = json.get("mute")
+                if(mute == "true")
+                    argument.put("mute", true)
+                else
+                    argument.put("mute", false)
+            }
+        }
 
         return  argument
     }
