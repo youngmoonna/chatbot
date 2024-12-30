@@ -160,7 +160,11 @@ class MainActivity : AppCompatActivity(), STTListener {
 
             var message = Message()
             message.role = "user"
-            message.content = msg!!.toString()
+            message.content == msg!!.toString()
+            if(sendList.size > 0)
+                message.content = msg!!.toString()
+            else
+                message.content = "큐봇,${msg!!}"
             chatList.add(message)
             llmAPI(message)
         }
@@ -310,66 +314,78 @@ class MainActivity : AppCompatActivity(), STTListener {
     }
 
     //device init
-    fun setDeviceValue(air: AirCleaner) {
+    fun     setDeviceValue(air: AirCleaner) {
         mainBinding.run {
-            // blink 애니메이션
-            val anim = AnimationUtils.loadAnimation(this@MainActivity,R.anim.blink_animation)
+
             //동작여부
+            // blink 애니메이션
+            val statusAnim = AnimationUtils.loadAnimation(this@MainActivity,R.anim.blink_animation)
             when (air.action) {
                 0 -> {
                     devicePowerStatus.background = getDrawable(R.drawable.shape_red_bg)
                     devicePowerStatus.text = "꺼짐"
-                    devicePowerStatus.animation = anim
+//                    devicePowerStatus.startAnimation(statusAnim)
                 }
                 1 ->  {
                     devicePowerStatus.background = getDrawable(R.drawable.shape_green_bg)
                     devicePowerStatus.text = "켜짐"
-                    devicePowerStatus.animation = anim
+//                    devicePowerStatus.startAnimation(statusAnim)
                 }
                 2 -> {
                     devicePowerStatus.background = getDrawable(R.drawable.shape_red_bg)
                     devicePowerStatus.text = "중지"
-                    devicePowerStatus.animation = anim
+//                    devicePowerStatus.startAnimation(statusAnim)
                 }
             }
 
             //풍량
+            // blink 애니메이션
+            val speedAnim = AnimationUtils.loadAnimation(this@MainActivity,R.anim.blink_animation)
             when (air.speed) {
                 0 -> {
                     deviceFanStatus.background = getDrawable(R.drawable.shape_blue_bg)
                     deviceFanStatus.text = "자동"
+//                    deviceFanStatus.startAnimation(speedAnim)
                 }
                 1 -> {
                     deviceFanStatus.background = getDrawable(R.drawable.shape_blue_bg)
                     deviceFanStatus.text = "취침"
+//                    deviceFanStatus.startAnimation(speedAnim)
                 }
                 2 -> {
                     deviceFanStatus.background = getDrawable(R.drawable.shape_green_bg)
                     deviceFanStatus.text = "약풍"
+//                    deviceFanStatus.startAnimation(speedAnim)
                 }
                 3 -> {
                     deviceFanStatus.background = getDrawable(R.drawable.shape_green_bg)
                     deviceFanStatus.text = "중풍"
+//                    deviceFanStatus.startAnimation(speedAnim)
                 }
                 4 -> {
                     deviceFanStatus.background = getDrawable(R.drawable.shape_red_bg)
                     deviceFanStatus.text = "강풍"
+//                    deviceFanStatus.startAnimation(speedAnim)
                 }
                 5 -> {
                     deviceFanStatus.background = getDrawable(R.drawable.shape_red_bg)
                     deviceFanStatus.text = "터보"
+//                    deviceFanStatus.startAnimation(speedAnim)
                 }
             }
 
             //스캔모드
+            val scanAnim = AnimationUtils.loadAnimation(this@MainActivity,R.anim.blink_animation)
             when (air.aqm_call_status) {
                 0 -> {
                     deviceScanStatus.background = getDrawable(R.drawable.shape_green_bg)
                     deviceScanStatus.text = "수동"
+//                    deviceScanStatus.startAnimation(scanAnim)
                 }
                 1 -> {
                     deviceScanStatus.background = getDrawable(R.drawable.shape_red_bg)
                     deviceScanStatus.text = "자동"
+//                    deviceScanStatus.startAnimation(scanAnim)
                 }
             }
 
@@ -380,122 +396,153 @@ class MainActivity : AppCompatActivity(), STTListener {
             deviceBatteryPowerTime.text = String.format(getString(R.string.device_battery_power_time), air.avrdailyusagepower)
 
             //LED 밝기
+            val ledAnim = AnimationUtils.loadAnimation(this@MainActivity,R.anim.blink_animation)
             when (air.LED_brightness) {
                 0 -> {
                     deviceLedStatus.background = getDrawable(R.drawable.shape_red_bg)
                     deviceLedStatus.text = "100%"
+//                    deviceLedStatus.startAnimation(ledAnim)
                 }
                 1 -> {
                     deviceLedStatus.background = getDrawable(R.drawable.shape_green_bg)
                     deviceLedStatus.text = "50%"
+//                    deviceLedStatus.startAnimation(ledAnim)
                 }
                 2 -> {
                     deviceLedStatus.background = getDrawable(R.drawable.shape_blue_bg)
                     deviceLedStatus.text = "0%"
+//                    deviceLedStatus.startAnimation(ledAnim)
                 }
             }
 
             //LCD 밝기
+            val lcdAnim = AnimationUtils.loadAnimation(this@MainActivity,R.anim.blink_animation)
             when (air.LCD_brightness) {
                 0 -> {
                     deviceLcdStatus.background = getDrawable(R.drawable.shape_red_bg)
                     deviceLcdStatus.text = "100%"
+//                    deviceLcdStatus.startAnimation(lcdAnim)
                 }
                 1 -> {
                     deviceLcdStatus.background = getDrawable(R.drawable.shape_green_bg)
                     deviceLcdStatus.text = "50%"
+//                    deviceLcdStatus.startAnimation(lcdAnim)
                 }
                 2 -> {
                     deviceLcdStatus.background = getDrawable(R.drawable.shape_blue_bg)
                     deviceLcdStatus.text = "0%"
+//                    deviceLcdStatus.startAnimation(lcdAnim)
                 }
             }
 
             //LED 공기질 상태 표시
+            val ledEnableAnim = AnimationUtils.loadAnimation(this@MainActivity,R.anim.blink_animation)
             if(air.led_enable) {
                 deviceAirQualityStatus.background = getDrawable(R.drawable.shape_green_bg)
                 deviceAirQualityStatus.text = "ON"
+//                deviceAirQualityStatus.startAnimation(ledEnableAnim)
             }
             else {
                 deviceAirQualityStatus.background = getDrawable(R.drawable.shape_red_bg)
                 deviceAirQualityStatus.text = "OFF"
+//                deviceAirQualityStatus.startAnimation(ledEnableAnim)
             }
 
             //UV 모드
+            val uvAnim = AnimationUtils.loadAnimation(this@MainActivity,R.anim.blink_animation)
             if(air.uv_enable) {
                 deviceUvStatus.background = getDrawable(R.drawable.shape_green_bg)
                 deviceUvStatus.text = "ON"
+//                deviceUvStatus.startAnimation(uvAnim)
             }
             else {
                 deviceUvStatus.background = getDrawable(R.drawable.shape_red_bg)
                 deviceUvStatus.text = "OFF"
+//                deviceUvStatus.startAnimation(uvAnim)
             }
 
 
             //미디음 사운드
+            val mediaAnim = AnimationUtils.loadAnimation(this@MainActivity,R.anim.blink_animation)
             when (air.sound_volume) {
                 0 -> {
                     deviceMediaStatus.background = getDrawable(R.drawable.shape_blue_bg)
                     deviceMediaStatus.text = "0%"
+//                    deviceMediaStatus.startAnimation(mediaAnim)
                 }
                 1 -> {
                     deviceMediaStatus.background = getDrawable(R.drawable.shape_blue_bg)
                     deviceMediaStatus.text = "20%"
+//                    deviceMediaStatus.startAnimation(mediaAnim)
                 }
                 2 -> {
                     deviceMediaStatus.background = getDrawable(R.drawable.shape_green_bg)
                     deviceMediaStatus.text = "40%"
+//                    deviceMediaStatus.startAnimation(mediaAnim)
                 }
                 3 -> {
                     deviceMediaStatus.background = getDrawable(R.drawable.shape_green_bg)
                     deviceMediaStatus.text = "60%"
+//                    deviceMediaStatus.startAnimation(mediaAnim)
                 }
                 4 -> {
                     deviceMediaStatus.background = getDrawable(R.drawable.shape_red_bg)
                     deviceMediaStatus.text = "80%"
+//                    deviceMediaStatus.startAnimation(mediaAnim)
                 }
                 5 -> {
                     deviceMediaStatus.background = getDrawable(R.drawable.shape_red_bg)
                     deviceMediaStatus.text = "100%"
+//                    deviceMediaStatus.startAnimation(mediaAnim)
                 }
             }
 
             //터치음 사운드
+            val touchAnim = AnimationUtils.loadAnimation(this@MainActivity,R.anim.blink_animation)
             when (air.button_volume) {
                 0 -> {
                     deviceTouchStatus.background = getDrawable(R.drawable.shape_blue_bg)
                     deviceTouchStatus.text = "0%"
+//                    deviceTouchStatus.startAnimation(touchAnim)
                 }
                 1 -> {
                     deviceTouchStatus.background = getDrawable(R.drawable.shape_blue_bg)
                     deviceTouchStatus.text = "20%"
+//                    deviceTouchStatus.startAnimation(touchAnim)
                 }
                 2 -> {
                     deviceTouchStatus.background = getDrawable(R.drawable.shape_green_bg)
                     deviceTouchStatus.text = "40%"
+//                    deviceTouchStatus.startAnimation(touchAnim)
                 }
                 3 -> {
                     deviceTouchStatus.background = getDrawable(R.drawable.shape_green_bg)
                     deviceTouchStatus.text = "60%"
+//                    deviceTouchStatus.startAnimation(touchAnim)
                 }
                 4 -> {
                     deviceTouchStatus.background = getDrawable(R.drawable.shape_red_bg)
                     deviceTouchStatus.text = "80%"
+//                    deviceTouchStatus.startAnimation(touchAnim)
                 }
                 5 -> {
                     deviceTouchStatus.background = getDrawable(R.drawable.shape_red_bg)
                     deviceTouchStatus.text = "100%"
+//                    deviceTouchStatus.startAnimation(touchAnim)
                 }
             }
 
             //음소거 설정
+            val muteAnim = AnimationUtils.loadAnimation(this@MainActivity,R.anim.blink_animation)
             if(air.mute){
                 deviceMuteStatus.background = getDrawable(R.drawable.shape_green_bg)
                 deviceMuteStatus.text = "ON"
+//                deviceTouchStatus.startAnimation(muteAnim)
             }
             else {
                 deviceMuteStatus.background = getDrawable(R.drawable.shape_red_bg)
                 deviceMuteStatus.text = "OFF"
+//                deviceTouchStatus.startAnimation(muteAnim)
             }
         }
     }

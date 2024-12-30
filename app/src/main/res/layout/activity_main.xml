@@ -131,7 +131,7 @@
         android:id="@+id/device_image"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:src="@drawable/air_cleaner"
+        android:src="@drawable/air_cleaner_2"
         android:scaleType="centerInside"
         app:layout_constraintWidth_percent="0.25"
         app:layout_constraintStart_toEndOf="@+id/chat_view"
@@ -141,7 +141,10 @@
         android:id="@+id/chat_device"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_margin="10dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="40dp"
+        android:padding="10dp"
+        android:background="@drawable/shape_rectangle"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/device_image">
 
@@ -221,90 +224,6 @@
             app:layout_constraintTop_toBottomOf="@+id/device_fan_status" />
 
         <TextView
-            android:id="@+id/device_battery"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:text="@string/device_battery_status"
-            android:textColor="@color/black"
-            android:textSize="20dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/device_scan_status" />
-
-        <TextView
-            android:id="@+id/device_battery_capacity"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:layout_marginRight="10dp"
-            android:background="@drawable/shape_red_bg"
-            android:gravity="center"
-            android:paddingLeft="10dp"
-            android:paddingRight="10dp"
-            android:text="@string/device_battery_capacity"
-            android:textColor="@color/black"
-            android:textSize="15dp"
-            app:layout_constraintWidth_percent="0.15"
-            app:layout_constraintEnd_toStartOf="@+id/device_battery_efficiency"
-            app:layout_constraintStart_toEndOf="@+id/device_power"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/device_battery" />
-
-        <TextView
-            android:id="@+id/device_battery_efficiency"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:layout_marginRight="10dp"
-            android:background="@drawable/shape_red_bg"
-            android:gravity="center"
-            android:paddingLeft="15dp"
-            android:paddingRight="15dp"
-            android:text="@string/device_battery_efficiency"
-            android:textColor="@color/black"
-            android:textSize="15dp"
-            app:layout_constraintWidth_percent="0.15"
-            app:layout_constraintEnd_toStartOf="@+id/device_battery_use"
-            app:layout_constraintStart_toEndOf="@+id/device_battery_capacity"
-            app:layout_constraintTop_toBottomOf="@+id/device_battery" />
-
-        <TextView
-            android:id="@+id/device_battery_use"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:layout_marginRight="10dp"
-            android:background="@drawable/shape_red_bg"
-            android:gravity="center"
-            android:paddingLeft="10dp"
-            android:paddingRight="10dp"
-            android:text="@string/device_battery_use_time"
-            android:textColor="@color/black"
-            android:textSize="15dp"
-            app:layout_constraintWidth_percent="0.3"
-            app:layout_constraintEnd_toStartOf="@+id/device_battery_power_time"
-            app:layout_constraintStart_toEndOf="@+id/device_battery_efficiency"
-            app:layout_constraintTop_toBottomOf="@+id/device_battery" />
-
-        <TextView
-            android:id="@+id/device_battery_power_time"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:layout_marginRight="10dp"
-            android:background="@drawable/shape_red_bg"
-            android:gravity="center"
-            android:paddingLeft="10dp"
-            android:paddingRight="10dp"
-            android:text="@string/device_battery_power_time"
-            android:textColor="@color/black"
-            android:textSize="15dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/device_battery_use"
-            app:layout_constraintTop_toBottomOf="@+id/device_battery" />
-
-        <TextView
             android:id="@+id/device_led"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -314,7 +233,7 @@
             android:textSize="20dp"
             app:layout_constraintEnd_toStartOf="@+id/device_led_status"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/device_battery_power_time" />
+            app:layout_constraintTop_toBottomOf="@+id/device_scan_status" />
 
         <TextView
             android:id="@+id/device_led_status"
@@ -327,7 +246,7 @@
             android:textColor="@color/red"
             android:textSize="25dp"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/device_battery_power_time" />
+            app:layout_constraintTop_toBottomOf="@+id/device_scan_status" />
 
         <TextView
             android:id="@+id/device_lcd"
@@ -473,6 +392,92 @@
             android:textSize="25dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/device_touch_status" />
+
+
+        <TextView
+            android:id="@+id/device_battery"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="@string/device_battery_status"
+            android:textColor="@color/black"
+            android:textSize="20dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/device_mute_status" />
+
+        <TextView
+            android:id="@+id/device_battery_capacity"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginRight="10dp"
+            android:background="@drawable/shape_red_bg"
+            android:gravity="center"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:text="@string/device_battery_capacity"
+            android:textColor="@color/black"
+            android:textSize="15dp"
+            app:layout_constraintWidth_percent="0.15"
+            app:layout_constraintEnd_toStartOf="@+id/device_battery_efficiency"
+            app:layout_constraintStart_toEndOf="@+id/device_power"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/device_battery" />
+
+        <TextView
+            android:id="@+id/device_battery_efficiency"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginRight="10dp"
+            android:background="@drawable/shape_red_bg"
+            android:gravity="center"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp"
+            android:text="@string/device_battery_efficiency"
+            android:textColor="@color/black"
+            android:textSize="15dp"
+            app:layout_constraintWidth_percent="0.15"
+            app:layout_constraintEnd_toStartOf="@+id/device_battery_use"
+            app:layout_constraintStart_toEndOf="@+id/device_battery_capacity"
+            app:layout_constraintTop_toBottomOf="@+id/device_battery" />
+
+        <TextView
+            android:id="@+id/device_battery_use"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginRight="10dp"
+            android:background="@drawable/shape_red_bg"
+            android:gravity="center"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:text="@string/device_battery_use_time"
+            android:textColor="@color/black"
+            android:textSize="15dp"
+            app:layout_constraintWidth_percent="0.3"
+            app:layout_constraintEnd_toStartOf="@+id/device_battery_power_time"
+            app:layout_constraintStart_toEndOf="@+id/device_battery_efficiency"
+            app:layout_constraintTop_toBottomOf="@+id/device_battery" />
+
+        <TextView
+            android:id="@+id/device_battery_power_time"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginRight="10dp"
+            android:background="@drawable/shape_red_bg"
+            android:gravity="center"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:text="@string/device_battery_power_time"
+            android:textColor="@color/black"
+            android:textSize="15dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/device_battery_use"
+            app:layout_constraintTop_toBottomOf="@+id/device_battery" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
