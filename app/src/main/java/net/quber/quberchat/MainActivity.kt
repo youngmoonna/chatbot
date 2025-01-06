@@ -216,6 +216,7 @@ class MainActivity : AppCompatActivity(), STTListener {
                     else {
                         var message = Message("assistant", chat.response)
                         chatList.add(message)
+                        sendList.add(message)
                         generateTTS(chat.response)
                     }
 

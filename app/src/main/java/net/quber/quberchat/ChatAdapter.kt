@@ -39,17 +39,18 @@ class ChatAdapter(private val context: Context, private var list: MutableList<Me
                 if(!message.content.contains("name")) {
                     holder.itemLinear.gravity = Gravity.RIGHT
                     holder.itemChat.background = context.getDrawable(R.drawable.shape_rectangle_green)
-                    holder.itemChat.text = String.format(context.getString(R.string.chat_string), message.role, message.content)
+                    holder.itemChat.text = String.format(context.getString(R.string.chat_string), "USER", message.content)
                 }
             }
             "assistant" -> {
                 if(!message.content.contains("name")) {
+                    var text = message.content.split("//")
                     holder.itemLinear.gravity = Gravity.LEFT
                     holder.itemChat.background = context.getDrawable(R.drawable.shape_rectangle_blue)
                     holder.itemChat.text = String.format(
                         context.getString(R.string.chat_string),
-                        message.role,
-                        message.content.replace("\n", "")
+                        "ASSISTANT",
+                        text[0].replace("\n", "")
                     )
                 }
             }
