@@ -2,11 +2,14 @@ package net.quber.quberchat
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.media.AudioManager
+import android.media.AudioManager.STREAM_MUSIC
 import android.media.MediaPlayer
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.provider.CalendarContract.Colors
 import android.text.TextUtils
 import android.util.Log
 import android.view.View
@@ -16,6 +19,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.getSystemService
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.google.gson.Gson
@@ -52,6 +56,8 @@ class MainActivity : AppCompatActivity(), STTListener {
     private var sendList = ArrayList<Message>()
     private var chatListAdapter = ChatAdapter(this, chatList)
 
+    private lateinit var audioManager: AudioManager
+
     private var airCleaner = AirCleaner()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,6 +76,11 @@ class MainActivity : AppCompatActivity(), STTListener {
         setContentView(mainBinding.root)
 
         mainBinding.run {
+            //get volume
+            audioManager = getSystemService(AUDIO_SERVICE) as AudioManager
+            getSoundVoiceVolume("sound_volume", airCleaner)
+//            var volume = audioManager.getStreamVolume(STREAM_MUSIC)
+
             //device init
             setDeviceValue(airCleaner)
 
@@ -315,78 +326,73 @@ class MainActivity : AppCompatActivity(), STTListener {
     }
 
     //device init
-    fun     setDeviceValue(air: AirCleaner) {
+    fun setDeviceValue(air: AirCleaner) {
         mainBinding.run {
 
             //동작여부
-            // blink 애니메이션
-            val statusAnim = AnimationUtils.loadAnimation(this@MainActivity,R.anim.blink_animation)
             when (air.action) {
                 0 -> {
                     devicePowerStatus.background = getDrawable(R.drawable.shape_red_bg)
                     devicePowerStatus.text = "꺼짐"
-//                    devicePowerStatus.startAnimation(statusAnim)
+                    devicePowerStatus.setTextColor(Color.WHITE)
                 }
                 1 ->  {
                     devicePowerStatus.background = getDrawable(R.drawable.shape_green_bg)
                     devicePowerStatus.text = "켜짐"
-//                    devicePowerStatus.startAnimation(statusAnim)
+                    devicePowerStatus.setTextColor(Color.BLACK)
                 }
                 2 -> {
                     devicePowerStatus.background = getDrawable(R.drawable.shape_red_bg)
                     devicePowerStatus.text = "중지"
-//                    devicePowerStatus.startAnimation(statusAnim)
+                    devicePowerStatus.setTextColor(Color.WHITE)
                 }
             }
 
             //풍량
-            // blink 애니메이션
-            val speedAnim = AnimationUtils.loadAnimation(this@MainActivity,R.anim.blink_animation)
             when (air.speed) {
                 0 -> {
                     deviceFanStatus.background = getDrawable(R.drawable.shape_blue_bg)
                     deviceFanStatus.text = "자동"
-//                    deviceFanStatus.startAnimation(speedAnim)
+                    deviceFanStatus.setTextColor(Color.BLACK)
                 }
                 1 -> {
                     deviceFanStatus.background = getDrawable(R.drawable.shape_blue_bg)
                     deviceFanStatus.text = "취침"
-//                    deviceFanStatus.startAnimation(speedAnim)
+                    deviceFanStatus.setTextColor(Color.BLACK)
                 }
                 2 -> {
                     deviceFanStatus.background = getDrawable(R.drawable.shape_green_bg)
                     deviceFanStatus.text = "약풍"
-//                    deviceFanStatus.startAnimation(speedAnim)
+                    deviceFanStatus.setTextColor(Color.BLACK)
                 }
                 3 -> {
                     deviceFanStatus.background = getDrawable(R.drawable.shape_green_bg)
                     deviceFanStatus.text = "중풍"
-//                    deviceFanStatus.startAnimation(speedAnim)
+                    deviceFanStatus.setTextColor(Color.BLACK)
                 }
                 4 -> {
                     deviceFanStatus.background = getDrawable(R.drawable.shape_red_bg)
                     deviceFanStatus.text = "강풍"
-//                    deviceFanStatus.startAnimation(speedAnim)
+                    deviceFanStatus.setTextColor(Color.WHITE)
                 }
                 5 -> {
                     deviceFanStatus.background = getDrawable(R.drawable.shape_red_bg)
                     deviceFanStatus.text = "터보"
-//                    deviceFanStatus.startAnimation(speedAnim)
+                    deviceFanStatus.setTextColor(Color.WHITE)
                 }
             }
 
             //스캔모드
-            val scanAnim = AnimationUtils.loadAnimation(this@MainActivity,R.anim.blink_animation)
             when (air.aqm_call_status) {
                 0 -> {
                     deviceScanStatus.background = getDrawable(R.drawable.shape_green_bg)
                     deviceScanStatus.text = "수동"
-//                    deviceScanStatus.startAnimation(scanAnim)
+                    deviceScanStatus.setTextColor(Color.BLACK)
                 }
                 1 -> {
                     deviceScanStatus.background = getDrawable(R.drawable.shape_red_bg)
                     deviceScanStatus.text = "자동"
-//                    deviceScanStatus.startAnimation(scanAnim)
+                    deviceScanStatus.setTextColor(Color.WHITE)
                 }
             }
 
@@ -397,21 +403,22 @@ class MainActivity : AppCompatActivity(), STTListener {
             deviceBatteryPowerTime.text = String.format(getString(R.string.device_battery_power_time), air.avrdailyusagepower)
 
             //LED 밝기
-            val ledAnim = AnimationUtils.loadAnimation(this@MainActivity,R.anim.blink_animation)
             when (air.LED_brightness) {
                 0 -> {
                     deviceLedStatus.background = getDrawable(R.drawable.shape_red_bg)
                     deviceLedStatus.text = "100%"
-//                    deviceLedStatus.startAnimation(ledAnim)
+                    deviceLedStatus.setTextColor(Color.WHITE)
                 }
                 1 -> {
                     deviceLedStatus.background = getDrawable(R.drawable.shape_green_bg)
                     deviceLedStatus.text = "50%"
+                    deviceLedStatus.setTextColor(Color.BLACK)
 //                    deviceLedStatus.startAnimation(ledAnim)
                 }
                 2 -> {
                     deviceLedStatus.background = getDrawable(R.drawable.shape_blue_bg)
                     deviceLedStatus.text = "0%"
+                    deviceLedStatus.setTextColor(Color.BLACK)
 //                    deviceLedStatus.startAnimation(ledAnim)
                 }
             }
@@ -422,16 +429,19 @@ class MainActivity : AppCompatActivity(), STTListener {
                 0 -> {
                     deviceLcdStatus.background = getDrawable(R.drawable.shape_red_bg)
                     deviceLcdStatus.text = "100%"
+                    deviceLcdStatus.setTextColor(Color.WHITE)
 //                    deviceLcdStatus.startAnimation(lcdAnim)
                 }
                 1 -> {
                     deviceLcdStatus.background = getDrawable(R.drawable.shape_green_bg)
                     deviceLcdStatus.text = "50%"
+                    deviceLcdStatus.setTextColor(Color.BLACK)
 //                    deviceLcdStatus.startAnimation(lcdAnim)
                 }
                 2 -> {
                     deviceLcdStatus.background = getDrawable(R.drawable.shape_blue_bg)
                     deviceLcdStatus.text = "0%"
+                    deviceLcdStatus.setTextColor(Color.BLACK)
 //                    deviceLcdStatus.startAnimation(lcdAnim)
                 }
             }
@@ -441,11 +451,13 @@ class MainActivity : AppCompatActivity(), STTListener {
             if(air.led_enable) {
                 deviceAirQualityStatus.background = getDrawable(R.drawable.shape_green_bg)
                 deviceAirQualityStatus.text = "ON"
+                deviceAirQualityStatus.setTextColor(Color.BLACK)
 //                deviceAirQualityStatus.startAnimation(ledEnableAnim)
             }
             else {
                 deviceAirQualityStatus.background = getDrawable(R.drawable.shape_red_bg)
                 deviceAirQualityStatus.text = "OFF"
+                deviceAirQualityStatus.setTextColor(Color.WHITE)
 //                deviceAirQualityStatus.startAnimation(ledEnableAnim)
             }
 
@@ -454,11 +466,13 @@ class MainActivity : AppCompatActivity(), STTListener {
             if(air.uv_enable) {
                 deviceUvStatus.background = getDrawable(R.drawable.shape_green_bg)
                 deviceUvStatus.text = "ON"
+                deviceUvStatus.setTextColor(Color.BLACK)
 //                deviceUvStatus.startAnimation(uvAnim)
             }
             else {
                 deviceUvStatus.background = getDrawable(R.drawable.shape_red_bg)
                 deviceUvStatus.text = "OFF"
+                deviceUvStatus.setTextColor(Color.WHITE)
 //                deviceUvStatus.startAnimation(uvAnim)
             }
 
@@ -469,31 +483,37 @@ class MainActivity : AppCompatActivity(), STTListener {
                 0 -> {
                     deviceMediaStatus.background = getDrawable(R.drawable.shape_blue_bg)
                     deviceMediaStatus.text = "0%"
+                    deviceMediaStatus.setTextColor(Color.BLACK)
 //                    deviceMediaStatus.startAnimation(mediaAnim)
                 }
                 1 -> {
                     deviceMediaStatus.background = getDrawable(R.drawable.shape_blue_bg)
                     deviceMediaStatus.text = "20%"
+                    deviceMediaStatus.setTextColor(Color.BLACK)
 //                    deviceMediaStatus.startAnimation(mediaAnim)
                 }
                 2 -> {
                     deviceMediaStatus.background = getDrawable(R.drawable.shape_green_bg)
                     deviceMediaStatus.text = "40%"
+                    deviceMediaStatus.setTextColor(Color.BLACK)
 //                    deviceMediaStatus.startAnimation(mediaAnim)
                 }
                 3 -> {
                     deviceMediaStatus.background = getDrawable(R.drawable.shape_green_bg)
                     deviceMediaStatus.text = "60%"
+                    deviceMediaStatus.setTextColor(Color.BLACK)
 //                    deviceMediaStatus.startAnimation(mediaAnim)
                 }
                 4 -> {
                     deviceMediaStatus.background = getDrawable(R.drawable.shape_red_bg)
                     deviceMediaStatus.text = "80%"
+                    deviceMediaStatus.setTextColor(Color.WHITE)
 //                    deviceMediaStatus.startAnimation(mediaAnim)
                 }
                 5 -> {
                     deviceMediaStatus.background = getDrawable(R.drawable.shape_red_bg)
                     deviceMediaStatus.text = "100%"
+                    deviceMediaStatus.setTextColor(Color.WHITE)
 //                    deviceMediaStatus.startAnimation(mediaAnim)
                 }
             }
@@ -504,31 +524,37 @@ class MainActivity : AppCompatActivity(), STTListener {
                 0 -> {
                     deviceTouchStatus.background = getDrawable(R.drawable.shape_blue_bg)
                     deviceTouchStatus.text = "0%"
+                    deviceTouchStatus.setTextColor(Color.BLACK)
 //                    deviceTouchStatus.startAnimation(touchAnim)
                 }
                 1 -> {
                     deviceTouchStatus.background = getDrawable(R.drawable.shape_blue_bg)
                     deviceTouchStatus.text = "20%"
+                    deviceTouchStatus.setTextColor(Color.BLACK)
 //                    deviceTouchStatus.startAnimation(touchAnim)
                 }
                 2 -> {
                     deviceTouchStatus.background = getDrawable(R.drawable.shape_green_bg)
                     deviceTouchStatus.text = "40%"
+                    deviceTouchStatus.setTextColor(Color.BLACK)
 //                    deviceTouchStatus.startAnimation(touchAnim)
                 }
                 3 -> {
                     deviceTouchStatus.background = getDrawable(R.drawable.shape_green_bg)
                     deviceTouchStatus.text = "60%"
+                    deviceTouchStatus.setTextColor(Color.BLACK)
 //                    deviceTouchStatus.startAnimation(touchAnim)
                 }
                 4 -> {
                     deviceTouchStatus.background = getDrawable(R.drawable.shape_red_bg)
                     deviceTouchStatus.text = "80%"
+                    deviceTouchStatus.setTextColor(Color.WHITE)
 //                    deviceTouchStatus.startAnimation(touchAnim)
                 }
                 5 -> {
                     deviceTouchStatus.background = getDrawable(R.drawable.shape_red_bg)
                     deviceTouchStatus.text = "100%"
+                    deviceTouchStatus.setTextColor(Color.WHITE)
 //                    deviceTouchStatus.startAnimation(touchAnim)
                 }
             }
@@ -538,14 +564,61 @@ class MainActivity : AppCompatActivity(), STTListener {
             if(air.mute){
                 deviceMuteStatus.background = getDrawable(R.drawable.shape_green_bg)
                 deviceMuteStatus.text = "ON"
+                deviceMuteStatus.setTextColor(Color.BLACK)
 //                deviceTouchStatus.startAnimation(muteAnim)
             }
             else {
                 deviceMuteStatus.background = getDrawable(R.drawable.shape_red_bg)
                 deviceMuteStatus.text = "OFF"
+                deviceMuteStatus.setTextColor(Color.WHITE)
 //                deviceTouchStatus.startAnimation(muteAnim)
             }
         }
+    }
+
+    fun setAnimation(device: Device) {
+        mainBinding.run {
+            val anim = AnimationUtils.loadAnimation(this@MainActivity,R.anim.blink_animation)
+            when (device.name) {
+                "setAirCleanerOperation" -> {
+                    var argument = converterToArgument(device.arguments)
+                    if(argument.size > 0) {
+                        argument.forEach { key, value ->
+                            when (key) {
+                                "action" -> devicePower.startAnimation(anim)
+//                                "ai" -> deviceFan.startAnimation(anim)
+                                "speed" -> deviceFan.startAnimation(anim)
+                            }
+                        }
+                    }
+                }
+                "setAirQualityIndoorInfo" -> {
+                    deviceScan.startAnimation(anim)
+                }
+                "setLedBrightness" -> {
+                    deviceLed.startAnimation(anim)
+                }
+                "setLCDBrightness" -> {
+                    deviceLcd.startAnimation(anim)
+                }
+                "setLedAirQualityIndicatorEnable" -> {
+                    deviceAirQuality.startAnimation(anim)
+                }
+                "setUVEnable" -> {
+                    deviceUv.startAnimation(anim)
+                }
+                "setSoundVoiceVolume" -> {
+                    deviceMedia.startAnimation(anim)
+                }
+                "setSoundEffectVolume" -> {
+                    deviceTouch.startAnimation(anim)
+                }
+                "setSoundMute" -> {
+                    deviceMute.startAnimation(anim)
+                }
+            }
+        }
+
     }
 
     fun callFunction(device: Device, air: AirCleaner) : JSONObject {
@@ -919,6 +992,7 @@ class MainActivity : AppCompatActivity(), STTListener {
         }
         //device set
         setDeviceValue(air)
+        setAnimation(device)
 
         return  resultJson
     }
@@ -1023,12 +1097,40 @@ class MainActivity : AppCompatActivity(), STTListener {
 
     //sound
     fun setSoundVoiceVolume(key : String, value: Any, air: AirCleaner): AirCleaner {
+        var volume = value as Int
+        if(volume == 0)
+            audioManager.setStreamVolume(STREAM_MUSIC, 1, AudioManager.FLAG_SHOW_UI)
+        else if(volume == 1)
+            audioManager.setStreamVolume(STREAM_MUSIC, 3, AudioManager.FLAG_SHOW_UI)
+        else if (volume == 2)
+            audioManager.setStreamVolume(STREAM_MUSIC, 6, AudioManager.FLAG_SHOW_UI)
+        else if (volume == 3)
+            audioManager.setStreamVolume(STREAM_MUSIC, 9, AudioManager.FLAG_SHOW_UI)
+        else if (volume == 4)
+            audioManager.setStreamVolume(STREAM_MUSIC, 12, AudioManager.FLAG_SHOW_UI)
+        else
+            audioManager.setStreamVolume(STREAM_MUSIC, 15, AudioManager.FLAG_SHOW_UI)
+
         when (key){
-            "sound_volume" -> air.sound_volume = value as Int
+            "sound_volume" -> air.sound_volume = volume
         }
         return air
     }
     fun getSoundVoiceVolume(data : String, air: AirCleaner) : Any {
+        var volume = audioManager.getStreamVolume(STREAM_MUSIC)
+        if(volume < 3)
+            air.sound_volume = 0
+        else if(volume < 6)
+            air.sound_volume = 1
+        else if (volume < 9)
+            air.sound_volume = 2
+        else if (volume < 12)
+            air.sound_volume = 3
+        else if (volume < 15)
+            air.sound_volume = 4
+        else
+            air.sound_volume = 5
+
         return when (data) {
             "sound_volume" -> air.sound_volume
             else -> ""
